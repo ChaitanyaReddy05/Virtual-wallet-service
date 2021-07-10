@@ -1,0 +1,145 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>E-wallet</title>
+	<link rel="stylesheet" href="{% static 'userwallet/wallet.css' %}">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+
+</head>
+<body>
+	<div class="wallet-container text-center">
+		<p class="page-title"><i class="fa fa-align-left"></i>My E-wallet<i class="fa fa-user"> &nbsp;welcome {{user.username}}</i></p>
+			{% if messages %}
+				{% for message in messages %}
+				  <div class="alert alert-{{ message.tags }}">
+					{{ message }}
+				  </div>
+		            {% endfor %}
+          {% endif %}
+		<div class="amount-box text-center">
+			<img src="https://lh3.googleusercontent.com/ohLHGNvMvQjOcmRpL4rjS3YQlcpO0D_80jJpJ-QA7-fQln9p3n7BAnqu3mxQ6kI4Sw" alt="wallet">
+			<p>Total Balance</p>
+			<p class="amount">₹ {{Balance}}</p>
+		</div>
+
+
+		<div class="btn-group text-center">
+			<button type="button" class="btn btn-outline-light" data-toggle="collapse" data-target="#collapseExample"  >Add Money</button>
+			<button type="button" class="btn btn-outline-light">Widthdraw</button>
+		</div>
+		<div class="collapse" id="collapseExample">
+			  <div class="card card-body">
+				  <form method="post" action="{% url 'addfunds' walletid %}" id="formdata">
+					  {% csrf_token %}
+					  <div class="form-group">
+						<input type="tel" class="form-check form-check-inline w-25" id="phonenum" name="phonenum" placeholder="Enter Phone number" pattern="[0-9]{4}[0-9]{3}[0-9]{3}" required >
+
+
+					  </div>
+					   <div class="form-group">
+						   <input id="amount" name="amount" placeholder="Enter Amount" class="form-check form-check-inline w-25" min="10" pattern="[0-9]" onkeypress="return !(event.charCode == 46)" step="1" title="Must be an integer number" type="number" required>
+
+
+					  </div>
+						<div class="form-check form-check-inline">
+					  <input class="form-check-input" type="radio" name="payment_gw" id="Google-pay" value="Google-pay" checked>
+					  <label class="form-check-label" for="inlineRadio1"><div class="text-primary">Google pay</div></label>
+					  </div>
+						<div class="form-check form-check-inline">
+					  <input class="form-check-input" type="radio" name="payment_gw" id="PayTM" value="PayTM">
+					  <label class="form-check-label" for="inlineRadio2" ><div class="text-primary">PayTM</div></label>
+					  </div>
+					  <div class="form-check form-check-inline">
+					  <input class="form-check-input" type="radio" name="payment_gw" id="amazonpay" value="amazonpay">
+					  <label class="form-check-label" for="inlineRadio2"><div class="text-primary">AmazonPay</div></label>
+
+					  </div>
+						<div class="form-check form-check-inline">
+					  <input class="form-check-input" type="radio" name="payment_gw" id="phonepay" value="phonepay">
+							<label class="form-check-label" for="inlineRadio2"><div class="text-primary">Phonepay</div></label>
+
+					  </div>
+
+					  <button type="submit" data-loading-text="Validating details..." class="btn btn-primary">Submit</button>
+					  						<small id="emailHelp" class="form-text text-muted">Please enter  mobile numbers registered with Gpay/Paytm/AmazonPay/Phonepay</small>
+
+				   </form>
+			  </div>
+		</div>
+		<div>
+			<p align="left"> <b>Recent transactions : </b></p>
+		</div>
+		<div class="txn-history">
+
+
+		<table class="table table-sm">
+		  <thead>
+			<tr>
+				<th class="txn-list" scope="col">Date</th>
+			  <th class="txn-list" scope="col">Source</th>
+
+				<th class="txn-list" scope="col">Ref#</th>
+				<th class="txn-list" scope="col">Type</th>
+				<th class="txn-list" scope="col">Amount</th>
+			</tr>
+		  </thead>
+		  <tbody>
+		  {%for txn in txn_list%}
+			<tr>
+				<td class="txn-list">{{txn.txn_date}}</td>
+
+			  <td class="txn-list">{{txn.txn_source}} </td>
+
+				<td class="txn-list">{{txn.txn_ref}}</td>
+
+				<td class="txn-list">{{txn.txn_type}}</td>
+				{%if txn.txn_type == "CREDIT" or txn.txn_amount == "NA"%}
+				<td class="txn-list"><span class="credit-amount">+₹ {{txn.txn_amount}}</span></td>
+				{%else%}
+				<td class="txn-list"><span class="debit-amount">-₹ {{txn.txn_amount}}</span></td>
+
+
+				{%endif%}
+
+			</tr>
+{%endfor%}
+		  </tbody>
+		</table>
+			</div>
+
+			<div class="footer-menu">
+				<div class="row text-center">
+					<div class="col-md-3">
+						<i class="fa fa-home"></i>
+						<p>Home</p>
+					</div>
+
+					<div class="col-md-3">
+						<i class="fa fa-inbox"></i>
+						<p><a href="{%url 'all_transactions' walletid %}">All transactions</a></p>
+					</div>
+
+					<div class="col-md-3">
+						<i class="fa fa-university"></i>
+						<p>Bank</p>
+					</div>
+
+					<div class="col-md-3">
+						<i class="fa fa-barcode"></i>
+
+						<p><a href="{%url 'logout'%}">Logout</a></p>
+					</div>
+				</div>
+			</div>
+</div>
+</body>
+</html>
