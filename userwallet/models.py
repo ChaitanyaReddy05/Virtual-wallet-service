@@ -6,10 +6,5 @@ from django.contrib.auth.models import User
 class wallet(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     walletid = models.AutoField(primary_key=True)
-
-    def save(self, *args, **kwargs):
-       if not wallet.objects.count():
-          self.walletid = 100
-       else:
-          self.walletid = wallet.objects.last().walletid + 1
-       super(wallet, self).save(*args, **kwargs)
+    gamepoints = models.IntegerField(default=0)
+    status = models.TextField(default='Active')

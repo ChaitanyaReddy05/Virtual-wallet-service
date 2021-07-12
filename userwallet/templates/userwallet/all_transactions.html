@@ -47,7 +47,7 @@
 				<td class="txn-list">{{txn.txn_ref}}</td>
 
 				<td class="txn-list">{{txn.txn_type}}</td>
-				{%if txn.txn_type == "CREDIT" or txn.txn_amount == "NA"%}
+				{%if txn.txn_type == "CREDIT" or txn.txn_amount == "0"%}
 				<td class="txn-list"><span class="credit-amount">+₹ {{txn.txn_amount}}</span></td>
 				{%else%}
 				<td class="txn-list"><span class="debit-amount">-₹ {{txn.txn_amount}}</span></td>

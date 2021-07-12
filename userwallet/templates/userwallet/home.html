@@ -16,8 +16,11 @@
 
 </head>
 <body>
+
+
 	<div class="wallet-container text-center">
-		<p class="page-title"><i class="fa fa-align-left"></i>My E-wallet<i class="fa fa-user"> &nbsp;welcome {{user.username}}</i></p>
+		<p class="page-title"><i class="fa fa-align-left"></i>CAPG Wallet Services<i class="fa fa-user"> &nbsp;welcome {{user.username}}</i></p>
+			{%if wallet%}
 			{% if messages %}
 				{% for message in messages %}
 				  <div class="alert alert-{{ message.tags }}">
@@ -27,6 +30,7 @@
           {% endif %}
 		<div class="amount-box text-center">
 			<img src="https://lh3.googleusercontent.com/ohLHGNvMvQjOcmRpL4rjS3YQlcpO0D_80jJpJ-QA7-fQln9p3n7BAnqu3mxQ6kI4Sw" alt="wallet">
+			<p>Status : Active</p>
 			<p>Total Balance</p>
 			<p class="amount">₹ {{Balance}}</p>
 		</div>
@@ -34,7 +38,6 @@
 
 		<div class="btn-group text-center">
 			<button type="button" class="btn btn-outline-light" data-toggle="collapse" data-target="#collapseExample"  >Add Money</button>
-			<button type="button" class="btn btn-outline-light">Widthdraw</button>
 		</div>
 		<div class="collapse" id="collapseExample">
 			  <div class="card card-body">
@@ -102,7 +105,7 @@
 				<td class="txn-list">{{txn.txn_ref}}</td>
 
 				<td class="txn-list">{{txn.txn_type}}</td>
-				{%if txn.txn_type == "CREDIT" or txn.txn_amount == "NA"%}
+				{%if txn.txn_type == "CREDIT" or txn.txn_amount == "0"%}
 				<td class="txn-list"><span class="credit-amount">+₹ {{txn.txn_amount}}</span></td>
 				{%else%}
 				<td class="txn-list"><span class="debit-amount">-₹ {{txn.txn_amount}}</span></td>
@@ -120,7 +123,7 @@
 				<div class="row text-center">
 					<div class="col-md-3">
 						<i class="fa fa-home"></i>
-						<p>Home</p>
+						<p><a href="{%url 'game_home' walletid %}">Home</a></p>
 					</div>
 
 					<div class="col-md-3">
@@ -130,7 +133,7 @@
 
 					<div class="col-md-3">
 						<i class="fa fa-university"></i>
-						<p>Bank</p>
+						<p><a href="{%url 'home' walletid %}">Wallet</a></p>
 					</div>
 
 					<div class="col-md-3">
@@ -139,7 +142,36 @@
 						<p><a href="{%url 'logout'%}">Logout</a></p>
 					</div>
 				</div>
-			</div>
+
+	{%else%}
+				<div class="amount-box text-center">
+			<img src="https://lh3.googleusercontent.com/ohLHGNvMvQjOcmRpL4rjS3YQlcpO0D_80jJpJ-QA7-fQln9p3n7BAnqu3mxQ6kI4Sw" alt="wallet">
+			<p>No Wallet  exists</p>
+			<p ><a href="{% url 'create_wallet_request' walletid %}">Please click here to create new wallet</a></p>
+		</div>
+
+		<div class="footer-menu">
+				<div class="row text-center">
+			<div class="col-md-3">
+						<i class="fa fa-home"></i>
+						<p><a href="{%url 'game_home' walletid %}">Home</a></p>
+					</div>
+					<div class="col-md-3"></div>
+					<div class="col-md-3"></div>
+
+
+
+
+
+					<div class="col-md-3">
+						<i class="fa fa-barcode"></i>
+
+						<p><a href="{%url 'logout'%}">Logout</a></p>
+					</div>
+				</div>
+        {%endif%}
+
+
 </div>
 </body>
 </html>
