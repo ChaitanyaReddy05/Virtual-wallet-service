@@ -162,31 +162,46 @@ def create_wallet_post(request,pk):
 @login_required
 def redeempoints(request,pk):
     txn_ref = ''.join([choice(string.ascii_uppercase + string.digits) for _ in range(9)])
+
     if request.method == 'POST':
         form = RedeemPointsForm(request.POST)
-        if form.is_valid():
-            url = f'https://ghfh9pbqnf.execute-api.us-east-1.amazonaws.com/Develop/funds?WalletID={pk}'
-            r = requests.get(url, headers={'authorizationToken': 'abc123'})
-            balance_details = r.json()
-            gamepoints = form.cleaned_data.get('gamepoints')
+        dynamodb = boto3.resource('dynamodb')
+        table_wallet = dynamodb.Table('userwallet')
+        wallet_response = table_wallet.query(
+            KeyConditionExpression=Key('walletid').eq(pk),
+            ScanIndexForward=False,
+        )
+        if wallet_response['Items']:
 
-            Balance = balance_details['Balance']
-            if int(gamepoints) <= Balance:
-                user_wallet = User.objects.get(pk=request.user.id).wallet
-                user_wallet.gamepoints += gamepoints
-                user_wallet.save()
+            if form.is_valid():
+                url = f'https://ghfh9pbqnf.execute-api.us-east-1.amazonaws.com/Develop/funds?WalletID={pk}'
+                r = requests.get(url, headers={'authorizationToken': 'abc123'})
 
 
+                balance_details = r.json()
 
-                url = f'https://ghfh9pbqnf.execute-api.us-east-1.amazonaws.com/Develop/deletefunds?WalletID={pk}&txn_source=CAPG-Game&txn_ref={txn_ref}&txn_type=DEBIT&txn_amount={gamepoints}&txn_date={datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
-                r = requests.post(url, headers={'authorizationToken': 'abc123'})
-                if r.status_code == 200:
-                    data = r.json()
-                messages.success(request, f'Balance of ₹ {gamepoints} debited from wallet  successfully ')
-                return redirect('home',pk=pk)
-            else:
-                messages.info(request, f'Insufficient Balance ')
-                form = RedeemPointsForm()
+                gamepoints = form.cleaned_data.get('gamepoints')
+
+                Balance = balance_details['Balance']
+                if int(gamepoints) <= Balance:
+                    user_wallet = User.objects.get(pk=request.user.id).wallet
+                    user_wallet.gamepoints += gamepoints
+                    user_wallet.save()
+                    url = f'https://ghfh9pbqnf.execute-api.us-east-1.amazonaws.com/Develop/deletefunds?WalletID={pk}&txn_source=CAPG-Game&txn_ref={txn_ref}&txn_type=DEBIT&txn_amount={gamepoints}&txn_date={datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+                    r = requests.post(url, headers={'authorizationToken': 'abc123'})
+
+                    if r.status_code == 200:
+                        data = r.json()
+                    time.sleep(5)
+                    messages.success(request, f'Balance of ₹ {gamepoints} debited from wallet  successfully ')
+                    return redirect('home',pk=pk)
+                else:
+                    messages.info(request, f'Insufficient Balance ')
+                    form = RedeemPointsForm()
+        else:
+            messages.info(request, f'Please create a wallet to add points ')
+            form = RedeemPointsForm()
+
 
 
 
