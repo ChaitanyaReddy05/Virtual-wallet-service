@@ -1,5 +1,7 @@
 # Virtual-wallet-service
 
+https://app.diagrams.net/#HChaitanyaReddy05%2FVirtual-wallet-service%2Fmaster%2FUntitled%20Diagram.drawio
+
 Please navigate to the respective individual folders as per the sequence mentioned below for the deployment :
 
 1) sam/User-wallet-sam/backend
