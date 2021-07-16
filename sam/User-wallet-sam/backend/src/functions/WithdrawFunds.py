@@ -5,6 +5,14 @@ from pyqldb.config.retry_config import RetryConfig
 
 
 def lambda_handler(event, context):
+    """
+       This Function is used to withdraw funds from the Wallet table.
+
+       """
+
+
+    # Parse out query string params
+
     WalletID = event['queryStringParameters']['WalletID']
     txn_source = event['queryStringParameters']['txn_source']
     txn_ref = event['queryStringParameters']['txn_ref']
@@ -12,13 +20,13 @@ def lambda_handler(event, context):
     txn_amount = event['queryStringParameters']['txn_amount']
     txn_date = event['queryStringParameters']['txn_date']
 
-    retry_config = RetryConfig(retry_limit=3)
 
     # Initialize the driver
-
+    retry_config = RetryConfig(retry_limit=3)
     print('Initializing the driver')
     qldb_driver = QldbDriver('UserWallet', retry_config=retry_config)
 
+    # Get old Balance
     def read_documents(transaction_executor):
         print('Querying the table', WalletID)
         cursor = transaction_executor.execute_statement('SELECT * FROM Wallet WHERE walletid = ?', int(WalletID))
@@ -32,13 +40,13 @@ def lambda_handler(event, context):
     responseObject['headers'] = {}
     responseObject['headers']['Content-Type'] = 'application/json'
     transactionResponse['WalletID'] = WalletID
+
+    # check if Balance is greater or equal to funds to withdraw
     if int(txn_amount) > int(old_balance):
         responseObject['statusCode'] = 402
         transactionResponse['message'] = 'Insufficient funds to redeem'
-
     else:
         new_balance = old_balance - int(txn_amount)
-
         def update_documents(transaction_executor, txn_source, txn_ref, txn_type, txn_amount, new_balance, txn_date,
                              WalletID):
             transaction_executor.execute_statement(
@@ -47,7 +55,7 @@ def lambda_handler(event, context):
 
         qldb_driver.execute_lambda(
             lambda x: update_documents(x, txn_source, txn_ref, txn_type, txn_amount, new_balance, txn_date, WalletID))
-        # 3. Construct http response object
+        # Construct http response object
 
         transactionResponse['current_balance'] = new_balance
         transactionResponse['message'] = 'Funds redeemed from the wallet'
@@ -57,6 +65,6 @@ def lambda_handler(event, context):
 
     responseObject['body'] = json.dumps(transactionResponse)
 
-    # 4. Return the response object
+    # Return the response object
 
     return responseObject

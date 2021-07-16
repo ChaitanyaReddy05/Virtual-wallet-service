@@ -5,8 +5,16 @@ from decimal import Decimal
 
 
 def lambda_handler(event, context):
-    # TODO implement
+
+    """
+    This Function is used to retrieve the history of transactions from dynamodb
+    based on the walletid as partition key.
+
+    """
+    # Parse out query parameters
     WalletID = event['queryStringParameters']['WalletID']
+
+    #initialize dynamodb client
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('Transactions')
     print(f"WalletID{WalletID}")
@@ -29,7 +37,7 @@ def lambda_handler(event, context):
     print(response)
     print(responseObject)
 
-    # 4. Return the response object
+    #  Return the response object
 
     return responseObject
 
