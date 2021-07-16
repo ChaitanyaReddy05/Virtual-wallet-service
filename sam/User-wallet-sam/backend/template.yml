@@ -1,0 +1,220 @@
+# This is the SAM template that represents the architecture of your serverless application
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
+
+# The AWSTemplateFormatVersion identifies the capabilities of the template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  backend
+
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform:
+- AWS::Serverless-2016-10-31
+
+
+Globals:
+  Api:
+    TracingEnabled: true
+  Function:
+    Tracing: Active
+    Timeout: 180
+    Environment:
+      Variables:
+        LEDGER_NAME: !Ref QldbLedger
+        AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:
+  # Each Lambda function is defined by properties:
+  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+
+  QldbLedger:
+    Type: AWS::QLDB::Ledger
+    Properties:
+      Name: UserWallet #
+      DeletionProtection: false
+      PermissionsMode: ALLOW_ALL
+      Tags:
+        - 
+          Key: name
+          Value: qldb-user-wallet-sam
+
+
+  CreateQldbTable:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/createQldbTable.lambda_handler
+      Runtime: python3.7
+      Environment:
+        Variables:
+          LEDGER_NAME: !Ref QldbLedger
+          WALLET_TABLE_NAME: Wallet
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow 
+              Action:
+                - qldb:SendCommand
+              Resource: !Sub arn:aws:qldb:${AWS::Region}:${AWS::AccountId}:ledger/${QldbLedger}
+
+  QldbTable:
+    Type: Custom::CreateQldbTable
+    DependsOn: QldbLedger
+    Properties:
+      ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${CreateQldbTable}
+      Version: 1.0 
+    
+  CreateQldbIndex:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/createIndex.lambda_handler
+      Runtime: python3.7
+      Environment:
+        Variables:
+          LEDGER_NAME: !Ref QldbLedger
+          TABLE_NAME: Wallet
+          INDEX_NAME_1: walletid
+
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow 
+              Action:
+                - qldb:SendCommand
+              Resource: !Sub arn:aws:qldb:${AWS::Region}:${AWS::AccountId}:ledger/${QldbLedger}
+
+  QldbIndex:
+    Type: Custom::qldbIndexes
+    DependsOn: QldbTable
+    Properties:
+      ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${CreateQldbIndex}
+      Version: 1.0 
+
+  CreateWallet:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/CreateWallet.lambda_handler
+      Runtime: python3.7
+      Environment:
+        Variables:
+          LEDGER_NAME: !Ref QldbLedger
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow 
+              Action:
+                - qldb:SendCommand
+              Resource: !Sub arn:aws:qldb:${AWS::Region}:${AWS::AccountId}:ledger/${QldbLedger}
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            Path: '/createwallet'
+            Method: post
+
+
+  GetFunds:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/GetFunds.lambda_handler
+      Runtime: python3.7
+      MemorySize: 512
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow 
+              Action:
+                - qldb:SendCommand
+              Resource: !Sub arn:aws:qldb:${AWS::Region}:${AWS::AccountId}:ledger/${QldbLedger}
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            Path: '/getfunds'
+            Method: get
+
+  AddFunds:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/addfunds.lambda_handler
+      Runtime: python3.7
+      Environment:
+        Variables:
+          LEDGER_NAME: !Ref QldbLedger
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - qldb:SendCommand
+              Resource: !Sub arn:aws:qldb:${AWS::Region}:${AWS::AccountId}:ledger/${QldbLedger}
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            Path: '/addfunds'
+            Method: post
+
+  WithdrawFunds:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/WithdrawFunds.lambda_handler
+      Runtime: python3.7
+      Environment:
+        Variables:
+          LEDGER_NAME: !Ref QldbLedger
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - qldb:SendCommand
+              Resource: !Sub arn:aws:qldb:${AWS::Region}:${AWS::AccountId}:ledger/${QldbLedger}
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            Path: '/withdrawfunds'
+            Method: post
+
+
+
+Outputs:
+  qldbUserWalletLedger:
+    Value:
+      Ref: QldbLedger
+    Export:
+      Name: qldb-user-wallet-sam
+  GetFundsApi:
+    Description: "API Gateway endpoint URL for Prod stage for Get Funds API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/getfunds/"
+  GetFundsFunction:
+    Description: "Get Funds Lambda Function ARN"
+    Value: !GetAtt GetFunds.Arn
+  AddFundsApi:
+    Description: "API Gateway endpoint URL for Prod stage for Add Funds API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/addfunds/"
+  AddFundsFunction:
+    Description: "Get Funds Lambda Function ARN"
+    Value: !GetAtt AddFunds.Arn
+  WithdrawFundsApi:
+    Description: "API Gateway endpoint URL for Prod stage for Withdraw Funds API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/withdrawfunds/"
+  WithdrawFundsFunction:
+    Description: "Withdraw Lambda Function ARN"
+    Value: !GetAtt WithdrawFunds.Arn
+  CreateWalletApi:
+    Description: "API Gateway endpoint URL for Prod stage for Withdraw Funds API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/createwallet/"
+  CreateWalletFunction:
+    Description: "Withdraw Lambda Function ARN"
+    Value: !GetAtt CreateWallet.Arn

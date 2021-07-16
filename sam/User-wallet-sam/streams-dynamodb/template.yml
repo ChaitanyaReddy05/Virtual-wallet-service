@@ -1,0 +1,192 @@
+# This is the SAM template that represents the architecture of your serverless application
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
+
+# The AWSTemplateFormatVersion identifies the capabilities of the template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  streams-dynamodb
+
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform:
+- AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Tracing: Active
+    Timeout: 180
+    Environment:
+      Variables:
+        TABLE_NAME: Wallet
+    
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:
+  # Each Lambda function is defined by properties:
+  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+
+  QldbStreamsDynamoDBLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/streams.lambda_handler
+      Runtime: python3.7
+      MemorySize: 1024
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: 2012-10-17 
+          Statement: 
+            - Effect: Allow 
+              Action:
+                - kinesis:ListStreams 
+                - kinesis:DescribeStream 
+                - kinesis:GetRecords 
+                - kinesis:GetShardIterator
+                - kinesis:PutRecord
+              Resource: !GetAtt WalletStreamKinesis.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+              Resource: !GetAtt WalletTable.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+              Resource: !GetAtt TransactionsTable.Arn
+
+
+  AllTransactionsDynamoDBFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/allTransactions.lambda_handler
+      Runtime: python3.7
+      MemorySize: 1024
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+              Resource: !GetAtt WalletTable.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+              Resource: !GetAtt TransactionsTable.Arn
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            Path: '/transactions'
+            Method: get
+
+
+
+
+  WalletTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    Properties:
+      TableName: Wallet
+      AttributeDefinitions:
+        - AttributeName: "walletid"
+          AttributeType: N
+      KeySchema:
+        - AttributeName: "walletid"
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  TransactionsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Delete
+      Properties:
+        TableName: Transactions
+        AttributeDefinitions:
+          - AttributeName: "walletid"
+            AttributeType: N
+          - AttributeName: "txn_date"
+            AttributeType: S
+        KeySchema:
+          - AttributeName: "walletid"
+            KeyType: HASH
+          - AttributeName: "txn_date"
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+
+  WalletStreamKinesis:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: WalletStreamKinesis
+      RetentionPeriodHours: 168
+      ShardCount: 1
+
+  WalletStreamsKinesisRole: # Used by QLDB to write to Kinesis Streams
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: qldb.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: QLDBStreamDynamoDBKinesisPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kinesis:ListShards
+                  - kinesis:DescribeStream
+                  - kinesis:PutRecord*
+                Resource: !GetAtt WalletStreamKinesis.Arn
+
+  LicenceQLDBStream:
+    Type: AWS::QLDB::Stream
+    DependsOn: WalletStreamsKinesisRole
+    Properties:
+      InclusiveStartTime: "2020-05-29T00:00:00Z"
+      KinesisConfiguration:
+        AggregationEnabled: true
+        StreamArn: !GetAtt WalletStreamKinesis.Arn
+      LedgerName: UserWallet
+      RoleArn: !GetAtt WalletStreamsKinesisRole.Arn
+      StreamName: qldb-Wallet-dynamodb-sam
+      Tags:
+        - Key: name
+          Value: qldb-Wallet-dynamodb-sam
+
+
+
+  MyEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 50
+      BisectBatchOnFunctionError: true
+
+      Enabled: true
+      EventSourceArn: !GetAtt WalletStreamKinesis.Arn
+      FunctionName: !GetAtt QldbStreamsDynamoDBLambdaFunction.Arn
+      MaximumRetryAttempts: 1
+      StartingPosition: "TRIM_HORIZON"

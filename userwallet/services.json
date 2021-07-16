@@ -1,0 +1,6 @@
+{ "createwallet":"https://e69ovtjvd9.execute-api.us-east-1.amazonaws.com/Prod/createwallet",
+  "addfunds":"https://e69ovtjvd9.execute-api.us-east-1.amazonaws.com/Prod/addfunds",
+  "withdrawfunds":"https://e69ovtjvd9.execute-api.us-east-1.amazonaws.com/Prod/withdrawfunds",
+  "getfunds":"https://e69ovtjvd9.execute-api.us-east-1.amazonaws.com/Prod/getfunds",
+  "txn_history": "https://o6q901nl60.execute-api.us-east-1.amazonaws.com/Prod/transactions"
+}

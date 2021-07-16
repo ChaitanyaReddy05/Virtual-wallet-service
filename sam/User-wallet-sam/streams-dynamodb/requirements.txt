@@ -1,0 +1,3 @@
+aws-kinesis-agg
+amazon.ion
+boto3

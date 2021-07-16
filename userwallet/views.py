@@ -1,5 +1,5 @@
 import time
-
+import json
 import requests
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -14,25 +14,35 @@ from datetime import datetime
 from boto3.dynamodb.conditions import Key
 from secrets import choice
 import string
-
+import os
 
 # Create your views here.
 
 @login_required
 def home(request,pk):
-    dynamodb = boto3.resource('dynamodb')
-    table_wallet = dynamodb.Table('userwallet')
-    wallet_response = table_wallet.query(
-        KeyConditionExpression=Key('walletid').eq(pk),
-        ScanIndexForward=False,
-    )
-    if wallet_response['Items']:
+    with open("userwallet/services.json", 'r') as f:
+        apistore = json.load(f)
+    transactions_url = apistore["txn_history"]
+    url = f'{transactions_url}?WalletID={pk}'
+    r = requests.get(url)
+    print(r)
 
-        url = f'https://ghfh9pbqnf.execute-api.us-east-1.amazonaws.com/Develop/funds?WalletID={pk}'
+    if r.status_code == 200:
+        data = r.json()
+
+
+    if data['Items']:
+        with open("userwallet/services.json", 'r') as f:
+            apistore = json.load(f)
+
+        getfunds_url = apistore["getfunds"]
+
+        url = f'{getfunds_url}?WalletID={pk}'
         r = requests.get(url, headers={'authorizationToken': 'abc123'})
         balance_details = r.json()
+        dynamodb = boto3.resource('dynamodb')
 
-        table = dynamodb.Table('transactions')
+        table = dynamodb.Table('Transactions')
         response = table.query(
             KeyConditionExpression=Key('walletid').eq(pk),
             ScanIndexForward = False,
@@ -109,7 +119,11 @@ def postfunds(request,pk):
 
             txn_ref = ''.join([choice(string.ascii_uppercase + string.digits) for _ in range(9)])
             # INVOKE addfunds  API HERE
-            url = f'https://ghfh9pbqnf.execute-api.us-east-1.amazonaws.com/Develop/addfunds?WalletID={pk}&txn_source={payment_gw}&txn_ref={txn_ref}&txn_type=CREDIT&txn_amount={txn_amount}&txn_date={datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+            with open("userwallet/services.json", 'r') as f:
+                apistore = json.load(f)
+
+            addfunds_url = apistore["addfunds"]
+            url = f'{addfunds_url}?WalletID={pk}&txn_source={payment_gw}&txn_ref={txn_ref}&txn_type=CREDIT&txn_amount={txn_amount}&txn_date={datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
             r = requests.post(url,headers={ 'authorizationToken': 'abc123' })
 
             if r.status_code == 200:
@@ -119,15 +133,17 @@ def postfunds(request,pk):
             return redirect('home',pk=pk)
 
 def all_transactions(request,pk):
+    with open("userwallet/services.json", 'r') as f:
+        apistore = json.load(f)
+    transactions_url = apistore["txn_history"]
+    url = f'{transactions_url}?WalletID={pk}'
+    r = requests.get(url, headers={'authorizationToken': 'abc123'})
 
-    dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('transactions')
-    response = table.query(
-        KeyConditionExpression=Key('walletid').eq(pk),
-        ScanIndexForward = False,
-    )
+    if r.status_code == 200:
+        data = r.json()
+
     context = {
-        'txn_list' : response["Items"],
+        'txn_list' : data["Items"],
         'walletid' : pk
 
     }
@@ -149,7 +165,11 @@ def create_wallet_post(request,pk):
     if request.method == 'POST':
             phonenum = request.POST["phonenum"]
             panid = request.POST["panid"]
-            url = f'https://ghfh9pbqnf.execute-api.us-east-1.amazonaws.com/Develop/createwallet?CreateWalletID={pk}&phonenum={phonenum}&panid={panid}&txn_date={datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+            with open("userwallet/services.json", 'r') as f:
+                apistore = json.load(f)
+
+            createwallet_url = apistore["createwallet"]
+            url = f'{createwallet_url}?CreateWalletID={pk}&phonenum={phonenum}&panid={panid}&txn_date={datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
             r = requests.post(url,headers={ 'authorizationToken': 'abc123' })
 
             if r.status_code == 200:
@@ -165,16 +185,24 @@ def redeempoints(request,pk):
 
     if request.method == 'POST':
         form = RedeemPointsForm(request.POST)
-        dynamodb = boto3.resource('dynamodb')
-        table_wallet = dynamodb.Table('userwallet')
-        wallet_response = table_wallet.query(
-            KeyConditionExpression=Key('walletid').eq(pk),
-            ScanIndexForward=False,
-        )
-        if wallet_response['Items']:
+        with open("userwallet/services.json", 'r') as f:
+            apistore = json.load(f)
+        transactions_url = apistore["txn_history"]
+        url = f'{transactions_url}?WalletID={pk}'
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            data = r.json()
+
+        if data['Items']:
 
             if form.is_valid():
-                url = f'https://ghfh9pbqnf.execute-api.us-east-1.amazonaws.com/Develop/funds?WalletID={pk}'
+                with open("userwallet/services.json", 'r') as f:
+                    apistore = json.load(f)
+
+                getfunds_url = apistore["getfunds"]
+                withdrawfunds_url = apistore["withdrawfunds"]
+                url = f'{getfunds_url}?WalletID={pk}'
                 r = requests.get(url, headers={'authorizationToken': 'abc123'})
 
 
@@ -187,8 +215,12 @@ def redeempoints(request,pk):
                     user_wallet = User.objects.get(pk=request.user.id).wallet
                     user_wallet.gamepoints += gamepoints
                     user_wallet.save()
-                    url = f'https://ghfh9pbqnf.execute-api.us-east-1.amazonaws.com/Develop/deletefunds?WalletID={pk}&txn_source=CAPG-Game&txn_ref={txn_ref}&txn_type=DEBIT&txn_amount={gamepoints}&txn_date={datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
-                    r = requests.post(url, headers={'authorizationToken': 'abc123'})
+
+
+                    url = f'{withdrawfunds_url}?WalletID={pk}&txn_source=CAPG-Game&txn_ref={txn_ref}&txn_type=DEBIT&txn_amount={gamepoints}&txn_date={datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+                    print(url)
+                    r = requests.post(url)#headers={'authorizationToken': 'abc123'}
+                    print(f"dra {r}")
 
                     if r.status_code == 200:
                         data = r.json()
@@ -201,10 +233,6 @@ def redeempoints(request,pk):
         else:
             messages.info(request, f'Please create a wallet to add points ')
             form = RedeemPointsForm()
-
-
-
-
 
     else:
         form = RedeemPointsForm()
