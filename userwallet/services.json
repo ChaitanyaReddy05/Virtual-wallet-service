@@ -1,6 +1,6 @@
-{ "createwallet":"https://e69ovtjvd9.execute-api.us-east-1.amazonaws.com/Prod/createwallet",
-  "addfunds":"https://e69ovtjvd9.execute-api.us-east-1.amazonaws.com/Prod/addfunds",
-  "withdrawfunds":"https://e69ovtjvd9.execute-api.us-east-1.amazonaws.com/Prod/withdrawfunds",
-  "getfunds":"https://e69ovtjvd9.execute-api.us-east-1.amazonaws.com/Prod/getfunds",
-  "txn_history": "https://o6q901nl60.execute-api.us-east-1.amazonaws.com/Prod/transactions"
+{ "createwallet":"<<paste create wallet api from sam backend output>>/createwallet",
+  "addfunds":"<<paste add funds api from sam backend output>>/addfunds",
+  "withdrawfunds":"<<paste withdraw funds api from sam backend output>>/withdrawfunds",
+  "getfunds":"<<paste get funds api from sam backend output>>/getfunds",
+  "txn_history": "<<paste transactions api from sam streams dynamodb output>>/transactions"
 }
