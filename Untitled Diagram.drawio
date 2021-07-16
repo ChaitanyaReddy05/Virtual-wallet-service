@@ -1,4 +1,4 @@
-<mxfile modified="2021-07-16T13:57:57.431Z" host="app.diagrams.net" agent="5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" etag="uuNJleM8LdKBbvSgsolo" version="14.8.6" type="github">
+<mxfile modified="2021-07-16T14:01:06.756Z" host="app.diagrams.net" agent="5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" etag="DBFH4MZ1ov2okc_ZoYzU" version="14.8.6" type="github">
   <diagram id="Ht1M8jgEwFfnCIfOTk4-" name="Page-1">
     <mxGraphModel dx="968" dy="620" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
@@ -120,7 +120,7 @@
         <mxCell id="Cj3VqgO8kL54i2j9dpfg-38" value="getfunds/" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;" vertex="1" parent="1">
           <mxGeometry x="437" y="290" width="70" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="Cj3VqgO8kL54i2j9dpfg-39" value="addfunds" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;" vertex="1" parent="1">
+        <mxCell id="Cj3VqgO8kL54i2j9dpfg-39" value="addfunds/" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;" vertex="1" parent="1">
           <mxGeometry x="405" y="150" width="70" height="20" as="geometry" />
         </mxCell>
         <mxCell id="Cj3VqgO8kL54i2j9dpfg-40" value="transactions/" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;" vertex="1" parent="1">
@@ -143,7 +143,7 @@
         </mxCell>
         <mxCell id="Cj3VqgO8kL54i2j9dpfg-47" value="All transactions" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Cj3VqgO8kL54i2j9dpfg-43">
           <mxGeometry x="-0.2236" y="10" relative="1" as="geometry">
-            <mxPoint as="offset" />
+            <mxPoint x="5" y="10" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="Cj3VqgO8kL54i2j9dpfg-48" value="" style="points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=#4D72F3;gradientDirection=north;fillColor=#3334B9;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.quantum_ledger_database;" vertex="1" parent="1">
@@ -151,6 +151,12 @@
         </mxCell>
         <mxCell id="Cj3VqgO8kL54i2j9dpfg-49" value="Amazon QLDB" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;" vertex="1" parent="1">
           <mxGeometry x="580" y="420" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Cj3VqgO8kL54i2j9dpfg-55" value="" style="points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=#945DF2;gradientDirection=north;fillColor=#5A30B5;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.kinesis_data_streams;" vertex="1" parent="1">
+          <mxGeometry x="780" y="337.5" width="78" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="Cj3VqgO8kL54i2j9dpfg-61" value="qldb streams" style="shape=doubleArrow;whiteSpace=wrap;html=1;arrowWidth=0.4;arrowSize=0.3;" vertex="1" parent="1">
+          <mxGeometry x="663" y="349" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
