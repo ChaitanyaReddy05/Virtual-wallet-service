@@ -43,6 +43,10 @@ The first command will build the source of your application. The second command 
 * **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to your application.
 
 
+**Capture Outputs (Imp)*
+After the deployment of stack, outputs of the transactions api would be shared as output , please capture the API endpoint and paste them in path : userwallet/services.json.
+
+
 
 ## Cleanup
 
