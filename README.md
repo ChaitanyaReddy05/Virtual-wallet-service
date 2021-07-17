@@ -1,5 +1,11 @@
 # Virtual-wallet-service
 
+In the gaming industry, users are often allowed to open accounts and make monetary transactions; they can exchange real money for in-game currency. Players want to be able to add or withdraw funds quickly, and they also want to know how their balance has changed over time. Having this information available helps our customers better understand their users’ behavior so they can identify marketing opportunities and improve sales predictions.
+
+The demo virtual wallet service was built as part of hackathon conducted by tech giant. This service can be used by gaming companies to manage players account balances including virtual currencies.
+
+# Architechture
+
 ![Architechture](https://github.com/ChaitanyaReddy05/Virtual-wallet-service/blob/master/architechture.png)
 
 Please navigate to the respective individual folders as per the sequence mentioned below for the deployment :
