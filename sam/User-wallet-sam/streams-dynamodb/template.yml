@@ -190,3 +190,8 @@ Resources:
       FunctionName: !GetAtt QldbStreamsDynamoDBLambdaFunction.Arn
       MaximumRetryAttempts: 1
       StartingPosition: "TRIM_HORIZON"
+
+Outputs:
+  AllTransactionsDynamoDBFunctionApi:
+     Description: "API Gateway endpoint URL for Prod stage for transactions API"
+     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/transactions/"

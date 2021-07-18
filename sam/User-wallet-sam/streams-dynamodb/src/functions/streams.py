@@ -5,12 +5,16 @@ from aws_kinesis_agg.deaggregator import deaggregate_records
 import boto3
 
 def lambda_handler(event, context):
+    """
+    This Function is used to capture the data records from qldb-kinesis stream
+     with record type as "REVISION_DETAILS" and send to dynamodb
+
+    """
     raw_kinesis_records = event['Records']
 
     # Deaggregate all records in one call
     records = deaggregate_records(raw_kinesis_records)
     for record in records:
-
         # Kinesis data in Python Lambdas is base64 encoded
         payload = base64.b64decode(record['kinesis']['data'])
         # payload is the actual ion binary record published by QLDB to the stream
@@ -21,12 +25,13 @@ def lambda_handler(event, context):
             revision_data, revision_metadata = get_data_metdata_from_revision_record(ion_record)
             print(revision_metadata["version"])
             table_info = get_table_info_from_revision_record(ion_record)
+
+            # Check if new wallet is being created or balance update.
             if (revision_metadata["version"] == 0):  # a new wallet created
                 if (table_info and table_info["tableName"] == "Wallet" and wallet_data_has_required_fields(
                         revision_data)):
                     # add dynamo DB insertion
                     print("Proceed to create wallet in dynamo userwallet table")
-
                     dynamodb = boto3.resource('dynamodb')
                     table = dynamodb.Table('Wallet')
                     response = table.put_item(
@@ -41,9 +46,6 @@ def lambda_handler(event, context):
                             'version' :  0
                         }
                     )
-
-
-
             else: # Balance updates
                 if (table_info and table_info["tableName"] == "Wallet" and wallet_data_has_required_fields(
                         revision_data)):
@@ -84,8 +86,6 @@ def lambda_handler(event, context):
                     'version' :  revision_metadata["version"]
                 }
             )
-
-
 
     return {
         'statusCode': 200

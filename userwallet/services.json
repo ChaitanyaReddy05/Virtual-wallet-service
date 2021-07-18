@@ -1,3 +1,4 @@
+
 { "createwallet":"<<paste create wallet api from sam backend output>>/createwallet",
   "addfunds":"<<paste add funds api from sam backend output>>/addfunds",
   "withdrawfunds":"<<paste withdraw funds api from sam backend output>>/withdrawfunds",

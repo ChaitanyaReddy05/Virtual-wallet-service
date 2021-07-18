@@ -22,7 +22,6 @@ Globals:
     Environment:
       Variables:
         LEDGER_NAME: !Ref QldbLedger
-        AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
 
 
 # Resources declares the AWS resources that you want to include in the stack
