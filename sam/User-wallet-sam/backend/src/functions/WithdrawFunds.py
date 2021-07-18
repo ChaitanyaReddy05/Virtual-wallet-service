@@ -58,6 +58,8 @@ def lambda_handler(event, context):
         # Construct http response object
 
         transactionResponse['current_balance'] = new_balance
+        transactionResponse['old_balance'] = old_balance
+
         transactionResponse['message'] = 'Funds redeemed from the wallet'
         print(transactionResponse)
 

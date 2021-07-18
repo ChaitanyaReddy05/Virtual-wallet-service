@@ -25,7 +25,6 @@ def home(request,pk):
     transactions_url = apistore["txn_history"]
     url = f'{transactions_url}?WalletID={pk}'
     r = requests.get(url)
-    print(r)
     if r.status_code == 200:
         data = r.json()
     if data['Items']:

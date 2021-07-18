@@ -28,6 +28,8 @@ def lambda_handler(event, context):
     def read_documents(transaction_executor):
         print('Querying the table', WalletID)
         cursor = transaction_executor.execute_statement('SELECT * FROM Wallet WHERE walletid = ?', int(WalletID))
+
+
         for doc in cursor:
             return doc['Balance']
     old_balance = qldb_driver.execute_lambda(lambda executor: read_documents(executor))
@@ -46,6 +48,8 @@ def lambda_handler(event, context):
     transactionResponse = {}
     transactionResponse['WalletID'] = WalletID
     transactionResponse['current_balance'] = new_balance
+    transactionResponse['old_balance'] = old_balance
+
     transactionResponse['message'] = 'Funds added to the wallet'
     print(transactionResponse)
     responseObject = {}

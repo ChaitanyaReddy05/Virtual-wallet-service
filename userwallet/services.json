@@ -1,6 +1,6 @@
-{ "createwallet":"https://nb8a9drufj.execute-api.us-east-1.amazonaws.com/Prod/createwallet",
-  "addfunds":"https://nb8a9drufj.execute-api.us-east-1.amazonaws.com/Prod/addfunds",
-  "withdrawfunds":"https://nb8a9drufj.execute-api.us-east-1.amazonaws.com/Prod/withdrawfunds",
-  "getfunds":"https://nb8a9drufj.execute-api.us-east-1.amazonaws.com/Prod/getfunds",
-  "txn_history": "https://2az6vyyo43.execute-api.us-east-1.amazonaws.com/Prod/transactions"
+{ "createwallet":"https://2d1ual9fl9.execute-api.us-east-1.amazonaws.com/Prod/createwallet",
+  "addfunds":"https://2d1ual9fl9.execute-api.us-east-1.amazonaws.com/Prod/addfunds",
+  "withdrawfunds":"https://2d1ual9fl9.execute-api.us-east-1.amazonaws.com/Prod/withdrawfunds",
+  "getfunds":"https://2d1ual9fl9.execute-api.us-east-1.amazonaws.com/Prod/getfunds",
+  "txn_history": "https://r3v7l838pf.execute-api.us-east-1.amazonaws.com/Prod/transactions"
 }
